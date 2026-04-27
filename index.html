@@ -357,14 +357,14 @@ tbody td{padding:9px 10px;vertical-align:middle;}
           <div class="twrap">
             <table>
               <thead><tr>
-                <th>이름</th><th>직급</th><th>이메일</th><th>기본급</th><th>비밀번호</th><th></th>
+                <th>이름</th><th>직급</th><th>이메일</th><th>지원금</th><th>비밀번호</th><th></th>
               </tr></thead>
               <tbody id="staffTableBody"></tbody>
             </table>
           </div>
         </div>
         <div style="margin-top:14px;padding:14px 20px;background:var(--blush);border-radius:12px;font-size:12px;color:var(--taupe);line-height:1.8;">
-          💡 <b>직급별 기본급 가이드</b>: 수석아티스트 160만원 / 아티스트 140만원 / 어시스턴트 100만원<br/>
+          💡 <b>직급별 지원금 가이드</b>: 실장 180만원 / 수석아티스트 160만원 / 아티스트 140만원 / 어시스턴트 100만원<br/>
           비밀번호는 마스킹 처리되며, 수정 시 새 비밀번호를 입력하면 즉시 반영됩니다.
         </div>
       </div>
@@ -435,7 +435,7 @@ tbody td{padding:9px 10px;vertical-align:middle;}
             <div class="ibox">
               <div class="ititle">인센티브 산출 내역</div>
               <div class="irow"><span>기준 매출</span><span class="ival" id="i1">₩0</span></div>
-              <div class="irow"><span>기본급 공제 후</span><span class="ival" id="i2">₩0</span></div>
+              <div class="irow"><span>지원금 공제 후</span><span class="ival" id="i2">₩0</span></div>
               <div class="irow"><span>적용 비율</span><span class="ival" id="i3">-</span></div>
               <div class="irow"><span>인센티브 금액</span><span class="ival" id="i4">₩0</span></div>
               
@@ -527,7 +527,7 @@ tbody td{padding:9px 10px;vertical-align:middle;}
       <input class="linput" type="password" id="smPw" placeholder="비밀번호 (4자 이상)"/>
     </div>
     <div class="fg">
-      <label class="fl">기본급 (원)</label>
+      <label class="fl">지원금 (원)</label>
       <input class="linput" type="number" id="smBase" placeholder="예: 1600000"/>
     </div>
     <div class="lerr" id="smErr"></div>
