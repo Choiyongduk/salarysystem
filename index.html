@@ -363,8 +363,12 @@ tbody td{padding:9px 10px;vertical-align:middle;}
     <div class="app">
       <div class="eyebrow">Salary Management</div>
       <h1 class="ptitle">직원 인센티브 <em>자동 계산</em></h1>
-      <div class="toolbar">
+      <div class="toolbar" style="justify-content:space-between;align-items:center;">
         <div class="mwrap"><label>년 월</label><input type="month" id="monthInput" onchange="onMonthChange()"/></div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="sstatus" id="sstatus2"></span>
+          <button class="btn bprimary bsm" onclick="manualSave()" style="background:var(--rose);border:none;color:#fff;padding:8px 20px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;">💾 저장</button>
+        </div>
       </div>
       <div class="g2">
         <div>
@@ -399,16 +403,7 @@ tbody td{padding:9px 10px;vertical-align:middle;}
             </div>
             <button class="addbtn" onclick="addExp()">＋ 업무비 추가</button>
           </div>
-          <div class="spanel">
-            <div class="chead"><span class="ctitle">급여 설정</span></div>
-            <div class="sbody">
-              <div class="srow2">
-                <span style="font-size:13px;color:var(--stone);">기본급</span>
-                <input class="sinput" type="number" id="baseSalary" value="1200000" onchange="recalc()"/>
-              </div>
-              <div class="snote">인센티브 구간: 500만 미만 30% / 500만 이상 40% / 1,000만 이상 50%</div>
-            </div>
-          </div>
+          <input type="hidden" id="baseSalary" value="1200000"/>
         </div>
         <div>
           <div class="scard">
@@ -419,7 +414,7 @@ tbody td{padding:9px 10px;vertical-align:middle;}
               <div class="srow"><span class="slabel">할인 합계</span><span class="sval neg" id="s4">-₩0</span></div>
               <div style="border-top:1px solid var(--rose-pale);margin:6px 0;"></div>
               <div class="srow"><span class="slabel">인센티브 기준 매출</span><span class="sval" id="s5">₩0</span></div>
-              <div class="srow"><span class="slabel">기본급</span><span class="sval" id="s6">₩1,200,000</span></div>
+              <div class="srow"><span class="slabel">지원금</span><span class="sval" id="s6">₩0</span></div>
               <div class="srow"><span class="slabel">인센티브 <span class="tpill t20" id="tpill">20%</span></span><span class="sval rose" id="s7">₩0</span></div>
               <div class="srow"><span class="slabel">세액공제 (3.3%)</span><span class="sval neg" id="s8">-₩0</span></div>
               <div class="srow"><span class="slabel rose">업무비 정산</span><span class="sval rose" id="s9">+₩0</span></div>
@@ -536,8 +531,8 @@ tbody td{padding:9px 10px;vertical-align:middle;}
 // ═══════════════════════════════════════
 var DEFAULT_ACCOUNTS = [
   { email:"박민희@hssup.com", pw:"091909",       key:"박민희", title:"원장님",           name:"박민희 원장님",          base:0,       isAdmin:true  },
-  { email:"황연미@hssup.com", pw:"ghkddusal1201", key:"황연미", title:"비비수석아티스트",  name:"황연미 (비비수석아티스트)", base:1600000, isAdmin:false },
-  { email:"전주윤@hssup.com", pw:"wjswndbs1201",  key:"전주윤", title:"유즈아티스트",     name:"전주윤 (유즈아티스트)",   base:1400000, isAdmin:false }
+  { email:"황연미@hssup.com", pw:"ghkddusal1201", key:"황연미", title:"비비실장",  name:"황연미 (비비실장)", base:1800000, isAdmin:false },
+  { email:"전주윤@hssup.com", pw:"wjswndbs1201",  key:"전주윤", title:"유즈아티스트",     name:"전주윤 (유즈아티스트)",   base:1600000, isAdmin:false }
 ];
 // 레거시 객체 포맷 (로그인 조회용 — 런타임에 채워짐)
 var ACCOUNTS = {};
@@ -569,7 +564,10 @@ var G = {
 
 function pad(n){ return String(n).padStart(2,"0"); }
 function fmt(n){ return "₩"+Math.round(n).toLocaleString("ko-KR"); }
-function se(id,t){ var e=document.getElementById(id); if(e) e.textContent=t; }
+function se(id,t){
+  var e=document.getElementById(id); if(e) e.textContent=t;
+  if(id==="sstatus"){ var e2=document.getElementById("sstatus2"); if(e2) e2.textContent=t; }
+}
 function showToast(msg){
   var t=document.getElementById("toast");
   t.textContent=msg;
@@ -704,13 +702,50 @@ rebuildAccounts(DEFAULT_ACCOUNTS);
 
 // ── 데이터 저장/불러오기 (JSONBin.io 단일 서버) ──────
 var JSONBIN_KEY = "$2a$10$ryWo8FBL5TSpYTq9EyoyTeBqna1rY8AVOoqR9cbe.6SiE59javiN.";
-var _cloudData  = {};
-var _binId      = "69ef32a6aaba88219741736c"; // hssup_salary_v1 (2026-04-27 생성)
+var _cloudData  = {};   // 전체 직원 데이터 (메모리 캐시)
+var _binId      = "69ef32a6aaba88219741736c"; // hssup_salary_v1
 
 // ── 클라우드 초기화: bin ID 조회/생성 후 데이터 fetch ──────
 function initCloud(onDone){
-  // bin ID가 하드코딩되어 있으므로 바로 fetch
+  // bin ID 고정값 사용 - 바로 fetchCloud
   fetchCloud(onDone);
+  return;
+  // 아래 코드는 사용 안함 (레거시)
+  var cached = "";
+  try{ cached = localStorage.getItem("hssup_main_binid") || ""; }catch(e){}
+  if(cached){
+    _binId = cached;
+    fetchCloud(onDone);
+    return;
+  }
+
+  // 새 bin 생성
+  se("sstatus","☁️ 서버 연결중...");
+  fetch("https://api.jsonbin.io/v3/b",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "X-Master-Key": JSONBIN_KEY,
+      "X-Bin-Name":   "hssup_main",
+      "X-Bin-Private":"true"
+    },
+    body: JSON.stringify({})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.metadata && d.metadata.id){
+      _binId = d.metadata.id;
+      try{ localStorage.setItem("hssup_main_binid", _binId); }catch(e){}
+    }
+    se("sstatus","✓ 서버 연결됨");
+    setTimeout(function(){ se("sstatus",""); }, 2000);
+    onDone && onDone();
+  })
+  .catch(function(){
+    se("sstatus","⚠️ 서버 연결 실패");
+    setTimeout(function(){ se("sstatus",""); }, 3000);
+    onDone && onDone();
+  });
 }
 
 // ── 클라우드에서 전체 데이터 가져오기 ──────
@@ -757,6 +792,8 @@ function saveCloud(){
     services: G.services,
     savedAt: new Date().toISOString()
   };
+  // 계정 정보도 항상 최신으로 유지
+  _cloudData["_accounts"] = DEFAULT_ACCOUNTS;
 
   se("sstatus","💾 저장중...");
   fetch("https://api.jsonbin.io/v3/b/"+_binId,{
@@ -793,6 +830,13 @@ function loadData(){
 
 // ── 저장 (debounced) ──────
 var _saveTimer = null;
+
+// ── 수동 저장 버튼 ──────────────────────────────
+function manualSave(){
+  saveLocal();
+  saveCloud();
+}
+
 function scheduleSave(){
   if(!_cloudData[G.staff]) _cloudData[G.staff] = {};
   _cloudData[G.staff][G.month] = {
@@ -1267,7 +1311,7 @@ function exportExcel(){
     ["HSSUP 급여 계산서","",""],
     [y+"년 "+parseInt(m)+"월 / "+G.staff,"",""],
     ["","",""],["항목","금액",""],
-    ["기본급",base,""],["시술 매출 합계",Math.round(raw),""],
+    ["지원금",base,""],["시술 매출 합계",Math.round(raw),""],
     ["점판수당(20%)",Math.round(pb),""],
     ["할인",-disc,""],["인센티브기준매출",Math.round(ib),""],
     ["인센티브("+Math.round(ir*100)+"%)",Math.round(ia),""],
