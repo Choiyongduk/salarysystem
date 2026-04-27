@@ -228,6 +228,19 @@ tbody td{padding:9px 10px;vertical-align:middle;}
 </style>
 </head>
 <body>
+<script>
+// 새로고침 시 로그인 화면 깜빡임 방지 - body 렌더 전에 실행
+(function(){
+  try{
+    if(localStorage.getItem("hssup_rem")==="1"
+       && localStorage.getItem("hssup_saved_email")
+       && localStorage.getItem("hssup_saved_pw")){
+      // 로그인 화면 숨기는 스타일 즉시 주입
+      document.write('<style>#loginScreen{display:none!important;}</style>');
+    }
+  }catch(e){}
+})();
+</script>
 
 <!-- 로그인 화면 -->
 <div id="loginScreen">
@@ -685,7 +698,7 @@ rebuildAccounts(DEFAULT_ACCOUNTS);
   .catch(function(){});
 })();
 
-// 저장된 로그인 복원
+// 저장된 로그인 복원 - 새로고침 시 로그인 화면 안 보이게
 (function(){
   try{
     if(localStorage.getItem("hssup_rem")==="1"){
@@ -694,8 +707,11 @@ rebuildAccounts(DEFAULT_ACCOUNTS);
       if(em) document.getElementById("loginEmail").value = em;
       if(pw) document.getElementById("loginPw").value    = pw;
       document.getElementById("rememberMe").checked = true;
-      // 자동 로그인
-      if(em && pw) doLogin();
+      if(em && pw){
+        // 로그인 화면 즉시 숨기기 (화면 깜빡임 방지)
+        document.getElementById("loginScreen").style.display = "none";
+        doLogin();
+      }
     }
   }catch(e){}
 })();
