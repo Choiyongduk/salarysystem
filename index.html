@@ -794,7 +794,6 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             <div class="ibox">
               <div class="ititle">인센티브 산출 내역</div>
               <div class="irow"><span>기준 매출</span><span class="ival" id="i1">₩0</span></div>
-              <div class="irow"><span>지원금 공제 후</span><span class="ival" id="i2">₩0</span></div>
               <div class="irow"><span>적용 비율</span><span class="ival" id="i3">-</span></div>
               <div class="irow"><span>인센티브 금액</span><span class="ival" id="i4">₩0</span></div>
               
@@ -1176,7 +1175,7 @@ function saveCloud(){
     expRows: window._expRows || [],
     bonusRows: window._bonusRows || [],
     services: G.services,
-    goal:    prev.goal,  // 기존 목표 보존
+    goal:    (prev.goal!=null ? prev.goal : null),  // 기존 목표 보존 (undefined 방지)
     savedAt: new Date().toISOString()
   };
 
@@ -1224,7 +1223,7 @@ function scheduleSave(){
     expRows: window._expRows || [],
     bonusRows: window._bonusRows || [],
     services: G.services,
-    goal:    prev.goal  // 기존 목표 보존
+    goal:    (prev.goal!=null ? prev.goal : null)  // 기존 목표 보존 (undefined 방지)
   };
   se("sstatus","입력중...");
   clearTimeout(_saveTimer);
@@ -1457,7 +1456,7 @@ function loadOwnerDash(){
     (staffData.bonusRows || []).forEach(function(r){ staffBonus += (r.amount||0); });
     var incBase = raw-disc;
     var iRate = getIncentiveInfo(incBase, st).rate;
-    var iAmt    = Math.max(0,(incBase-staffBase)*iRate);
+    var iAmt    = Math.max(0,incBase*iRate);
     var prodBonus = prod * 0.2;  // 점판 수당 20%
     var totalInc = iAmt + prodBonus;
     var tax = (staffBase+totalInc)*0.033;
@@ -1712,14 +1711,14 @@ function recalc(){
   var myAcct = getAccountList().find(function(a){ return a.key===G.staff; });
   var incInfo = getIncentiveInfo(ib, myAcct);
   var ir=incInfo.rate, il=incInfo.label, tc=incInfo.tierClass;
-  var ia=Math.max(0,(ib-base)*ir), ti=ia+pb, tax=(base+ti)*0.033, net=base+ti-tax+exp+bonus;
+  var ia=Math.max(0,ib*ir), ti=ia+pb, tax=(base+ti)*0.033, net=base+ti-tax+exp+bonus;
   se("s1",fmt(Math.round(raw)));
   se("s3",fmt(Math.round(pb)));      se("s4","-"+fmt(disc));
   se("s5",fmt(Math.round(ib)));      se("s6",fmt(base));
   se("s7",fmt(Math.round(ti)));      se("s8","-"+fmt(Math.round(tax)));
   se("s9", exp>0 ? "+"+fmt(Math.round(exp)) : "+₩0");
   se("s10", bonus>0 ? "+"+fmt(Math.round(bonus)) : "+₩0");
-  se("i1",fmt(Math.round(ib)));      se("i2",fmt(Math.round(Math.max(0,ib-base))));
+  se("i1",fmt(Math.round(ib)));
   se("i3",il); se("i4",fmt(Math.round(ia))); se("i6",fmt(Math.round(pb)));
   se("totalSal",fmt(Math.round(net)));
   var tp=document.getElementById("tpill"); tp.className="tpill "+tc; tp.textContent=il;
@@ -1965,9 +1964,10 @@ function exportExcel(){
   });
   (window._expRows||[]).forEach(function(x){ exp+=(x.amount||0); });
   (window._bonusRows||[]).forEach(function(x){ bonus+=(x.amount||0); });
-  var ib=raw-disc,pb=prod*0.2,ir=0.30;
-  if(ib>=10000000)ir=0.50; else if(ib>=5000000)ir=0.40;
-  var ia=Math.max(0,(ib-base)*ir),ti=ia+pb,tax=(base+ti)*0.033,net=base+ti-tax+exp+bonus;
+  var ib=raw-disc,pb=prod*0.2;
+  var myAcctX = getAccountList().find(function(a){ return a.key===G.staff; });
+  var ir = getIncentiveInfo(ib, myAcctX).rate;
+  var ia=Math.max(0,ib*ir),ti=ia+pb,tax=(base+ti)*0.033,net=base+ti-tax+exp+bonus;
   var s2=[
     ["HSSUP 급여 계산서","",""],
     [y+"년 "+parseInt(m)+"월 / "+G.staff,"",""],
