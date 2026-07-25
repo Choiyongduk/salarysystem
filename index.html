@@ -79,7 +79,8 @@ body{font-family:"DM Sans","Noto Sans KR",sans-serif;background:var(--bg);color:
 .mwrap input,.mwrap select{border:none;background:transparent;font-family:"DM Sans","Noto Sans KR",sans-serif;font-size:14px;color:var(--dark);font-weight:500;outline:none;}
 .mwrap input{width:130px;}
 .mwrap select{min-width:90px;cursor:pointer;}
-.g2{display:grid;grid-template-columns:1fr 370px;gap:20px;align-items:start;}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:20px;align-items:start;}
+.g2>div{min-width:0;}
 
 /* 카드 */
 .card{background:var(--white);border:1px solid rgba(196,115,90,.14);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;}
@@ -234,7 +235,7 @@ tbody td{padding:9px 10px;vertical-align:middle;}
 }
 
 @media(max-width:900px) and (min-width:769px){
-  .g2{grid-template-columns:1fr;}
+  .g2{grid-template-columns:minmax(0,1fr);}
   .app{padding:20px 20px 60px;}
   .nav-inner{padding:0 20px;}
 }
@@ -522,6 +523,256 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 }
 </style>
 
+<style>
+/* ══════════════════════════════════════════════════════
+   화면 최적화 (PC / 태블릿 / 모바일)
+   ※ 앞선 규칙을 덮어써야 하므로 항상 마지막에 위치
+   ══════════════════════════════════════════════════════ */
+
+/* 표가 페이지 전체를 밀어내지 않도록 */
+.twrap{max-width:100%;}
+
+/* 하단 고정 바는 모바일에서만 표시 */
+.mbar{display:none;}
+
+/* ── 넓은 모니터에서 화면을 더 활용 ───────────────── */
+@media (min-width:1500px){
+  .nav-inner,.app{max-width:1460px;}
+}
+@media (min-width:1250px) and (max-width:1499px){
+  .nav-inner,.app{max-width:1240px;}
+}
+
+/* ── PC / 태블릿 (769px 이상) ─────────────────────── */
+@media (min-width:769px){
+  /* 시술표: 카드 안에서만 스크롤 + 머리글·번호 고정 */
+  .entry-card .twrap{
+    max-height:min(62vh,640px);
+    overflow:auto;
+    overscroll-behavior:contain;
+  }
+  .entry-card thead th{
+    position:sticky;top:0;z-index:3;
+    background:var(--white);
+    box-shadow:inset 0 -1px 0 var(--rose-pale);
+  }
+  .entry-card thead th:first-child{left:0;z-index:5;}
+  .entry-card tbody td:first-child{
+    position:sticky;left:0;z-index:2;
+    background:var(--white);
+  }
+  .entry-card tbody tr:hover td:first-child{background:var(--blush);}
+
+  /* 요약 카드를 따라오게 → 긴 표를 입력하며 실수령액 확인 */
+  .g2>div:last-child{
+    position:sticky;
+    top:88px;
+    max-height:calc(100vh - 108px);
+    overflow-y:auto;
+    scrollbar-width:thin;
+  }
+  .g2>div:last-child::-webkit-scrollbar{width:6px;}
+  .g2>div:last-child::-webkit-scrollbar-thumb{
+    background:var(--rose-pale);border-radius:3px;
+  }
+
+  /* 스크롤 막대를 항상 보이게 (표가 잘려 보이는 오해 방지) */
+  .twrap::-webkit-scrollbar{height:10px;width:10px;}
+  .twrap::-webkit-scrollbar-track{background:var(--blush);border-radius:5px;}
+  .twrap::-webkit-scrollbar-thumb{background:var(--rose-pale);border-radius:5px;}
+  .twrap::-webkit-scrollbar-thumb:hover{background:var(--taupe);}
+
+  /* 입력 칸 클릭 영역 확보 */
+  .ci{padding:4px 2px;border-radius:6px;}
+  .ci:hover{background:var(--blush);}
+  tbody td{padding:7px 8px;}
+}
+
+/* 태블릿: 요약 카드 sticky 해제 (한 줄 배치라 불필요) */
+@media (max-width:900px) and (min-width:769px){
+  .g2>div:last-child{position:static;max-height:none;overflow:visible;}
+}
+
+/* ── 모바일 (768px 이하) ─────────────────────────── */
+@media (max-width:768px){
+  /* 좌우 스크롤 안내 문구 제거 (이제 카드형이라 불필요) */
+  .card:has(#entryBody) .twrap::after{display:none!important;content:none!important;}
+
+  /* 표 → 항목별 카드로 전환 */
+  .stack-m .twrap{
+    overflow-x:visible!important;
+    max-height:none!important;
+    padding-bottom:2px;
+  }
+  .stack-m .twrap table{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .stack-m thead{display:none!important;}
+  .stack-m tbody{display:block;}
+
+  .stack-m tbody tr{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 12px;
+    margin:12px;
+    padding:12px 14px 14px;
+    border:1px solid var(--rose-pale);
+    border-radius:14px;
+    background:var(--bg);
+  }
+  .stack-m tbody tr:hover{background:var(--bg);}
+
+  .stack-m tbody td{
+    display:block;
+    padding:0;
+    border:none;
+    min-width:0;
+  }
+  .stack-m tbody td::before{
+    content:attr(data-label);
+    display:block;
+    font-size:10px;
+    letter-spacing:.05em;
+    color:var(--taupe);
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .stack-m tbody td[data-w="full"]{grid-column:1 / -1;}
+
+  /* 카드 안 입력 칸은 테두리 있는 박스로 */
+  .stack-m tbody td .ci{
+    width:100%!important;
+    min-height:44px;
+    padding:10px 12px;
+    background:var(--white);
+    border:1px solid var(--rose-pale);
+    border-radius:10px;
+  }
+  .stack-m tbody td .ci:focus{
+    border-color:var(--rose);
+    box-shadow:0 0 0 3px rgba(232,101,26,.12);
+  }
+  .stack-m tbody td select.ci{
+    appearance:none;-webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--taupe) 50%),
+                     linear-gradient(135deg,var(--taupe) 50%,transparent 50%);
+    background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;
+    background-size:5px 5px,5px 5px;
+    background-repeat:no-repeat;
+    padding-right:32px;
+  }
+
+  /* 카드 머리: 번호 + 삭제 버튼 */
+  .stack-m td.mc-no{
+    grid-column:1;
+    align-self:center;
+    font-size:13px!important;
+    font-weight:700;
+    color:var(--rose)!important;
+    text-align:left!important;
+    min-width:0!important;
+  }
+  .stack-m td.mc-no::before{content:"No.";}
+  .stack-m td.mc-del{
+    grid-column:2;
+    align-self:center;
+    text-align:right;
+  }
+  .stack-m td.mc-del::before{display:none;}
+  .stack-m td.mc-del .bx{padding:8px 14px;font-size:15px;}
+
+  /* 카드 하단 총금액 강조 */
+  .stack-m td.mc-total{
+    grid-column:1 / -1;
+    display:flex!important;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+    margin-top:2px;
+    padding:10px 0 0!important;
+    border-top:1px dashed var(--rose-pale);
+    font-size:17px!important;
+    font-weight:700!important;
+    color:var(--rose);
+    min-width:0!important;
+  }
+  .stack-m td.mc-total::before{
+    margin-bottom:0;
+    font-size:11px;
+    align-self:center;
+  }
+
+  /* 원장님 화면 표는 좌우 스크롤 유지 (읽기 전용) */
+  #dashView .twrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch;}
+  #dashView .twrap table{min-width:640px!important;}
+  #dashView .twrap thead th{position:static;}
+
+  /* 하단 실수령액 고정 바 */
+  .mbar{
+    display:flex;
+    position:fixed;
+    left:10px;right:10px;
+    bottom:calc(10px + env(safe-area-inset-bottom));
+    z-index:150;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 18px;
+    border-radius:16px;
+    background:linear-gradient(135deg,var(--rose),var(--rose-light));
+    box-shadow:0 8px 28px rgba(40,22,6,.28);
+    color:#fff;
+  }
+  .mbar-label{
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    opacity:.9;
+  }
+  .mbar-val{
+    font-family:"Cormorant Garamond",serif;
+    font-size:24px;
+    font-weight:700;
+  }
+  .app{padding-bottom:96px;}
+
+  /* 목표 카드: 구간 라벨 대신 눈금선만 */
+  .goal-bar-bg{overflow:visible;}
+
+  /* 요약 카드 값 정렬 */
+  .srow{align-items:baseline;}
+  .slabel{flex:1;min-width:0;}
+}
+
+/* 아주 작은 화면: 카드 1열 */
+@media (max-width:430px){
+  .stack-m tbody tr{
+    grid-template-columns:1fr;
+    gap:10px;
+    position:relative;
+    padding-top:14px;
+  }
+  .stack-m td.mc-no{grid-column:1;}
+  .stack-m td.mc-del{
+    grid-column:1;
+    position:absolute;
+    top:12px;
+    right:14px;
+    margin:0;
+  }
+  .mbar-val{font-size:21px;}
+}
+
+/* 인쇄 시 고정 요소 제거 */
+@media print{
+  .mbar{display:none!important;}
+  .entry-card .twrap{max-height:none!important;overflow:visible!important;}
+  .g2>div:last-child{position:static!important;max-height:none!important;overflow:visible!important;}
+}
+</style>
+
 </head>
 <body>
 <script>
@@ -681,6 +932,10 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 
   <!-- 내 업무 -->
   <div id="myView">
+    <div class="mbar" id="mobileBar">
+      <span class="mbar-label">실수령 월급</span>
+      <span class="mbar-val" id="mbarVal">₩0</span>
+    </div>
     <div class="app">
       <div class="eyebrow">Salary Management</div>
       <h1 class="ptitle">직원 인센티브 <em>자동 계산</em></h1>
@@ -725,7 +980,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
               <div class="goal-msg goal-msg-compare" id="goalMsgCompare"></div>
             </div>
           </div>
-          <div class="card">
+          <div class="card entry-card stack-m">
             <div class="chead">
               <span class="ctitle">시술 내역 입력</span>
               <span id="rowCount" style="font-size:12px;color:var(--taupe);">총 0건</span>
@@ -741,7 +996,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             </div>
             <button class="addbtn" onclick="addRow()">+ 행 추가</button>
           </div>
-          <div class="spanel" style="margin-top:14px;">
+          <div class="spanel stack-m" style="margin-top:14px;">
             <div class="chead">
               <span class="ctitle">업무비 내역</span>
               <span id="expTotal" style="font-size:13px;color:var(--rose);font-weight:500;">합계 ₩0</span>
@@ -756,7 +1011,7 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             </div>
             <button class="addbtn" onclick="addExp()">+ 업무비 추가</button>
           </div>
-          <div class="spanel" style="margin-top:14px;">
+          <div class="spanel stack-m" style="margin-top:14px;">
             <div class="chead">
               <span class="ctitle">추가 보너스</span>
               <span id="bonusTotal" style="font-size:13px;color:var(--rose);font-weight:500;">합계 ₩0</span>
@@ -1536,50 +1791,50 @@ function makeRow(r,i){
 
   var tr = document.createElement("tr");
   tr.innerHTML =
-    "<td style='color:var(--taupe);font-size:12px;text-align:center;min-width:28px;'>"+(i+1)+"</td>" +
+    "<td class='mc-no' style='color:var(--taupe);font-size:12px;text-align:center;min-width:28px;'>"+(i+1)+"</td>" +
 
-    "<td><input class='ci' type='date' value='"+(r.date||"")+"'" +
+    "<td data-label='날짜'><input class='ci' type='date' value='"+(r.date||"")+"'" +
       " onchange=\"upd("+i+",'date',this.value)\" style='width:118px'/></td>" +
 
-    "<td><input class='ci' type='text' value='"+(r.name||"")+"'" +
+    "<td data-label='고객명'><input class='ci' type='text' value='"+(r.name||"")+"'" +
       " oninput=\"upd("+i+",'name',this.value)\" placeholder='고객명' style='width:66px'/></td>" +
 
-    "<td><select class='ci' onchange=\"upd("+i+",'pay',this.value)\" style='width:50px'>" +
+    "<td data-label='결제'><select class='ci' onchange=\"upd("+i+",'pay',this.value)\" style='width:50px'>" +
       "<option value='이체'"+((!r.pay||r.pay==='이체')?" selected":"")+">이체</option>" +
       "<option value='카드'"+(r.pay==='카드'?" selected":"")+">카드</option>" +
       "<option value='현금'"+(r.pay==='현금'?" selected":"")+">현금</option>" +
     "</select></td>" +
 
-    "<td><select class='ci' onchange=\"upd("+i+",'type',this.value)\" style='width:40px'>" +
+    "<td data-label='신/재'><select class='ci' onchange=\"upd("+i+",'type',this.value)\" style='width:40px'>" +
       "<option value='재'"+((!r.type||r.type==='재')?" selected":"")+">재</option>" +
       "<option value='신'"+(r.type==='신'?" selected":"")+">신</option>" +
     "</select></td>" +
 
-    "<td><select class='ci' onchange=\"upd("+i+",'service',this.value)\" style='width:90px'>"+svcOpts+"</select></td>" +
+    "<td data-label='시술' data-w='full'><select class='ci' onchange=\"upd("+i+",'service',this.value)\" style='width:90px'>"+svcOpts+"</select></td>" +
 
-    "<td><input class='ci' type='number' value='"+(r.sales||"")+"'" +
+    "<td data-label='시술금액'><input class='ci' type='number' value='"+(r.sales||"")+"'" +
       " oninput=\"upd("+i+",'sales',+this.value||0)\" placeholder='0' style='width:76px;text-align:right'/></td>" +
 
-    "<td><input class='ci' type='text' value='"+(r.productName||"")+"'" +
+    "<td data-label='제품명'><input class='ci' type='text' value='"+(r.productName||"")+"'" +
       " oninput=\"upd("+i+",'productName',this.value)\" placeholder='제품명' style='width:80px'/></td>" +
 
-    "<td><input class='ci' type='number' value='"+(r.product||"")+"'" +
+    "<td data-label='점판'><input class='ci' type='number' value='"+(r.product||"")+"'" +
       " oninput=\"upd("+i+",'product',+this.value||0)\" placeholder='0' style='width:60px;text-align:right'/></td>" +
 
-    "<td><input class='ci' type='text' value='"+(r.discountNote||"")+"'" +
+    "<td data-label='할인내용'><input class='ci' type='text' value='"+(r.discountNote||"")+"'" +
       " oninput=\"upd("+i+",'discountNote',this.value)\" placeholder='할인내용' style='width:80px'/></td>" +
 
-    "<td><input class='ci' type='number' value='"+(r.discount||"")+"'" +
+    "<td data-label='할인'><input class='ci' type='number' value='"+(r.discount||"")+"'" +
       " oninput=\"upd("+i+",'discount',+this.value||0)\" placeholder='0' style='width:60px;text-align:right'/></td>" +
 
-    "<td id='rt"+i+"' style='white-space:nowrap;font-weight:500;min-width:72px;padding:0 8px;'>"+fmt(Math.round(tot))+"</td>" +
+    "<td class='mc-total' data-label='총금액' id='rt"+i+"' style='white-space:nowrap;font-weight:500;min-width:72px;padding:0 8px;'>"+fmt(Math.round(tot))+"</td>" +
 
-    "<td><select class='ci' onchange=\"upd("+i+",'route',this.value)\" style='width:86px'>"+rtOpts+"</select></td>" +
+    "<td data-label='방문경로'><select class='ci' onchange=\"upd("+i+",'route',this.value)\" style='width:86px'>"+rtOpts+"</select></td>" +
 
-    "<td><input class='ci' type='text' value='"+(r.keyword||"")+"'" +
+    "<td data-label='키워드'><input class='ci' type='text' value='"+(r.keyword||"")+"'" +
       " oninput=\"upd("+i+",'keyword',this.value)\" placeholder='키워드' style='width:72px'/></td>" +
 
-    "<td><button class='bx' onclick='delRow("+i+")'>×</button></td>";
+    "<td class='mc-del'><button class='bx' onclick='delRow("+i+")'>×</button></td>";
   return tr;
 }
 
@@ -1721,6 +1976,7 @@ function recalc(){
   se("i1",fmt(Math.round(ib)));
   se("i3",il); se("i4",fmt(Math.round(ia))); se("i6",fmt(Math.round(pb)));
   se("totalSal",fmt(Math.round(net)));
+  se("mbarVal",fmt(Math.round(net)));
   var tp=document.getElementById("tpill"); tp.className="tpill "+tc; tp.textContent=il;
 
   // 매출 목표 게이지 업데이트 (현재 매출 = ib = raw - disc, 인센티브 기준 매출)
@@ -2024,13 +2280,13 @@ function renderExpTable(){
     total += (r.amount||0);
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td><input class='ci' type='date' value='"+(r.date||"")+"'" +
+      "<td data-label='날짜'><input class='ci' type='date' value='"+(r.date||"")+"'" +
         " onchange=\"updExp("+i+",'date',this.value)\" style='width:118px'/></td>" +
-      "<td><input class='ci' type='number' value='"+(r.amount||"")+"'" +
+      "<td data-label='금액'><input class='ci' type='number' value='"+(r.amount||"")+"'" +
         " oninput=\"updExp("+i+",'amount',+this.value||0)\" placeholder='금액' style='width:90px;text-align:right;color:var(--rose);'/></td>" +
-      "<td><input class='ci' type='text' value='"+(r.desc||"")+"'" +
+      "<td data-label='사용처' data-w='full'><input class='ci' type='text' value='"+(r.desc||"")+"'" +
         " oninput=\"updExp("+i+",'desc',this.value)\" placeholder='사용처 (예: 쿠팡-화장지)' style='width:200px;'/></td>" +
-      "<td><button class='bx' onclick='delExp("+i+")'>×</button></td>";
+      "<td class='mc-del'><button class='bx' onclick='delExp("+i+")'>×</button></td>";
     tb.appendChild(tr);
   });
   var el = document.getElementById("expTotal");
@@ -2082,13 +2338,13 @@ function renderBonusTable(){
     total += (r.amount||0);
     var tr = document.createElement("tr");
     tr.innerHTML =
-      "<td><input class='ci' type='date' value='"+(r.date||"")+"'" +
+      "<td data-label='날짜'><input class='ci' type='date' value='"+(r.date||"")+"'" +
         " onchange=\"updBonus("+i+",'date',this.value)\" style='width:118px'/></td>" +
-      "<td><input class='ci' type='text' value='"+(r.desc||"")+"'" +
+      "<td data-label='내용' data-w='full'><input class='ci' type='text' value='"+(r.desc||"")+"'" +
         " oninput=\"updBonus("+i+",'desc',this.value)\" placeholder='예: 원데이클래스, 수강생 소개비' style='width:200px;'/></td>" +
-      "<td><input class='ci' type='number' value='"+(r.amount||"")+"'" +
+      "<td data-label='금액'><input class='ci' type='number' value='"+(r.amount||"")+"'" +
         " oninput=\"updBonus("+i+",'amount',+this.value||0)\" placeholder='금액' style='width:90px;text-align:right;color:var(--rose);'/></td>" +
-      "<td><button class='bx' onclick='delBonus("+i+")'>×</button></td>";
+      "<td class='mc-del'><button class='bx' onclick='delBonus("+i+")'>×</button></td>";
     tb.appendChild(tr);
   });
   var el = document.getElementById("bonusTotal");
