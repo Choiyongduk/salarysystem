@@ -79,7 +79,7 @@ body{font-family:"DM Sans","Noto Sans KR",sans-serif;background:var(--bg);color:
 .mwrap input,.mwrap select{border:none;background:transparent;font-family:"DM Sans","Noto Sans KR",sans-serif;font-size:14px;color:var(--dark);font-weight:500;outline:none;}
 .mwrap input{width:130px;}
 .mwrap select{min-width:90px;cursor:pointer;}
-.g2{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:20px;align-items:start;}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start;}
 .g2>div{min-width:0;}
 
 /* 카드 */
@@ -535,6 +535,26 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 /* 하단 고정 바는 모바일에서만 표시 */
 .mbar{display:none;}
 
+/* ── 숫자 입력칸의 증감 화살표 제거 (1원 단위 조정은 불필요) ── */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  appearance:none;
+  margin:0;
+}
+input[type=number]{
+  -moz-appearance:textfield;
+  appearance:textfield;
+}
+
+/* ── 목표 마커 라벨이 카드 밖으로 잘리지 않게 ────────── */
+.goal-marker.edge-right .goal-marker-label{
+  left:auto;right:0;transform:none;
+}
+.goal-marker.edge-left .goal-marker-label{
+  left:0;transform:none;
+}
+
 /* ── 넓은 모니터에서 화면을 더 활용 ───────────────── */
 @media (min-width:1500px){
   .nav-inner,.app{max-width:1460px;}
@@ -563,18 +583,42 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   }
   .entry-card tbody tr:hover td:first-child{background:var(--blush);}
 
-  /* 요약 카드를 따라오게 → 긴 표를 입력하며 실수령액 확인 */
+  /* 요약 카드 + 월별 차트를 한 덩어리로 함께 따라오게 */
   .g2>div:last-child{
     position:sticky;
     top:88px;
-    max-height:calc(100vh - 108px);
+    max-height:calc(100vh - 104px);
     overflow-y:auto;
     scrollbar-width:thin;
+    scrollbar-color:var(--rose-pale) transparent;
+    padding-right:2px;
   }
-  .g2>div:last-child::-webkit-scrollbar{width:6px;}
+  .g2>div:last-child::-webkit-scrollbar{width:5px;}
+  .g2>div:last-child::-webkit-scrollbar-track{background:transparent;}
   .g2>div:last-child::-webkit-scrollbar-thumb{
     background:var(--rose-pale);border-radius:3px;
   }
+
+  /* ── 급여 요약 + 차트를 한 화면에 담기 위한 여백 압축 ── */
+  .scard .shead{padding:13px 20px 9px;}
+  .scard .stitle{font-size:19px;}
+  .scard .ssub{font-size:11px;}
+  .scard .srows{padding:7px 20px;}
+  .scard .srow{padding:3px 0;}
+  .scard .slabel{font-size:12.5px;line-height:1.45;}
+  .scard .sval{font-size:13px;line-height:1.45;}
+  .scard .ibox{margin:0 20px 11px;padding:10px 14px;}
+  .scard .ititle{margin-bottom:5px;}
+  .scard .irow{padding:1px 0;font-size:11.5px;}
+  .scard .tbox{margin:0 20px 14px;padding:12px 18px;}
+  .scard .tlabel{font-size:11px;}
+  .scard .tval{font-size:25px;}
+
+  /* 차트 카드도 압축 */
+  .chart-card .chead{padding:11px 18px 9px;}
+  .chart-card .ctitle{font-size:17px;}
+  .chart-card .chart-wrap{padding:10px 14px 14px;}
+  .chart-card .chart-title{margin-bottom:8px;}
 
   /* 스크롤 막대를 항상 보이게 (표가 잘려 보이는 오해 방지) */
   .twrap::-webkit-scrollbar{height:10px;width:10px;}
@@ -586,6 +630,78 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
   .ci{padding:4px 2px;border-radius:6px;}
   .ci:hover{background:var(--blush);}
   tbody td{padding:7px 8px;}
+}
+
+/* ══════════════════════════════════════════════════════
+   넓은 화면(1250px↑): 시술 내역표를 좌우 스크롤 없이 한눈에
+   표 폭을 % 로 고정 배분해 항상 화면에 딱 맞춘다
+   ══════════════════════════════════════════════════════ */
+@media (min-width:1250px){
+  .app{padding-left:24px;padding-right:24px;}
+
+  .entry-card .twrap{overflow-x:hidden;}
+  .entry-card table{
+    table-layout:fixed;
+    width:100%!important;
+    min-width:0!important;
+  }
+  .entry-card thead th{
+    padding:6px 4px;
+  }
+  .entry-card tbody td{
+    padding:6px 4px;
+    overflow:hidden;
+  }
+  .entry-card .ci{
+    width:100%!important;
+    min-width:0;
+    font-size:12px;
+    padding:5px 4px;
+  }
+  .entry-card tbody td.mc-total{
+    min-width:0!important;
+    padding:6px 4px!important;
+    font-size:12.5px;
+    text-align:right;
+  }
+  /* 헤더는 잘리지 않게 두 줄까지 허용 */
+  .entry-card thead th{
+    font-size:10px;
+    letter-spacing:0;
+    white-space:normal;
+    line-height:1.25;
+    vertical-align:bottom;
+  }
+
+  /* 컬럼 폭 배분 (합계 100%) */
+  .entry-card thead th:nth-child(1){width:3%;}   /* No.      */
+  .entry-card thead th:nth-child(2){width:13%;}  /* 날짜     */
+  .entry-card thead th:nth-child(3){width:7%;}   /* 고객명   */
+  .entry-card thead th:nth-child(4){width:6%;}   /* 결제     */
+  .entry-card thead th:nth-child(5){width:5%;}   /* 신/재    */
+  .entry-card thead th:nth-child(6){width:10%;}  /* 시술     */
+  .entry-card thead th:nth-child(7){width:8%;}   /* 시술금액 */
+  .entry-card thead th:nth-child(8){width:6%;}   /* 제품명   */
+  .entry-card thead th:nth-child(9){width:6%;}   /* 점판     */
+  .entry-card thead th:nth-child(10){width:6%;}  /* 할인내용 */
+  .entry-card thead th:nth-child(11){width:6%;}  /* 할인     */
+  .entry-card thead th:nth-child(12){width:8%;}  /* 총금액   */
+  .entry-card thead th:nth-child(13){width:8%;}  /* 방문경로 */
+  .entry-card thead th:nth-child(14){width:5%;}  /* 키워드   */
+  .entry-card thead th:nth-child(15){width:3%;}  /* 삭제     */
+
+  /* 좁아진 칸에서 select 화살표가 글자를 가리지 않도록 */
+  .entry-card tbody td select.ci{
+    appearance:none;-webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--taupe) 50%),
+                     linear-gradient(135deg,var(--taupe) 50%,transparent 50%);
+    background-position:calc(100% - 9px) 52%,calc(100% - 5px) 52%;
+    background-size:4px 4px,4px 4px;
+    background-repeat:no-repeat;
+    padding-right:15px;
+    text-overflow:ellipsis;
+  }
+  .entry-card tbody td .bx{padding:3px 6px;font-size:11px;}
 }
 
 /* 태블릿: 요약 카드 sticky 해제 (한 줄 배치라 불필요) */
@@ -1056,11 +1172,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
             </div>
             <div class="tbox"><span class="tlabel">실수령 월급</span><span class="tval" id="totalSal">₩0</span></div>
           </div>
-          <!-- 월별 매출 그래프 -->
-          <div class="scard" style="margin-top:18px;">
+          <!-- 월별 매출 그래프 (요약 카드와 함께 움직임) -->
+          <div class="scard chart-card" style="margin-top:14px;">
             <div class="chead"><span class="ctitle">월별 매출 추이 <span style="font-size:12px;color:var(--taupe);font-family:'DM Sans',sans-serif;font-weight:400;">(최근 12개월)</span></span></div>
             <div class="chart-wrap">
-              <canvas id="myChart" height="180"></canvas>
+              <canvas id="myChart" height="150"></canvas>
             </div>
           </div>
         </div>
@@ -2075,14 +2191,24 @@ function renderGoal(currentSales){
     // 목표가 500만 이상이면 500만 위치는 (500만/목표)*100%
     var pos500 = goalAmt > 0 ? Math.min(100, (5000000/goalAmt)*100) : 0;
     var pos1000 = goalAmt > 0 ? Math.min(100, (10000000/goalAmt)*100) : 0;
+
+    // 라벨이 카드 바깥으로 잘리지 않도록 끝단에서 정렬 방향을 바꿔줌
+    var clampEdge = function(el, pos){
+      el.classList.remove("edge-right","edge-left");
+      if(pos >= 86)      el.classList.add("edge-right");
+      else if(pos <= 12) el.classList.add("edge-left");
+    };
+
     // 목표가 500만 미만이면 마커가 의미 없으므로 숨김
     if(goalAmt >= 5000000 && goalAmt > 0){
       m500.style.display = ""; m500.style.left = pos500 + "%";
+      clampEdge(m500, pos500);
     } else {
       m500.style.display = "none";
     }
     if(goalAmt >= 10000000 && goalAmt > 0){
       m1000.style.display = ""; m1000.style.left = pos1000 + "%";
+      clampEdge(m1000, pos1000);
     } else {
       m1000.style.display = "none";
     }
@@ -2383,6 +2509,51 @@ function delBonus(i){
   window._bonusRows = rows;
   renderBonusTable(); recalc(); scheduleSave();
 }
+
+// ── 엔터키로 다음 입력칸으로 이동 ──────────────────
+// 시술내역 / 업무비 / 보너스 표에서 Enter → 오른쪽 칸으로 포커스 이동
+// (행 끝이면 다음 행 첫 칸으로 넘어감)
+(function(){
+  var TABLE_BODIES = ["entryBody","expBody","bonusBody"];
+
+  function ownerBody(el){
+    for(var i=0;i<TABLE_BODIES.length;i++){
+      var tb = document.getElementById(TABLE_BODIES[i]);
+      if(tb && tb.contains(el)) return tb;
+    }
+    return null;
+  }
+
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" || e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+    var el = e.target;
+    if(!el || !el.classList || !el.classList.contains("ci")) return;
+
+    var tb = ownerBody(el);
+    if(!tb) return;
+
+    e.preventDefault();
+
+    var fields = Array.prototype.slice.call(
+      tb.querySelectorAll("input.ci, select.ci")
+    ).filter(function(f){ return !f.disabled && f.offsetParent !== null; });
+
+    var idx = fields.indexOf(el);
+    if(idx === -1) return;
+
+    var next = fields[idx + 1];
+    if(!next){
+      // 마지막 칸이면 포커스를 풀고 저장만 반영
+      el.blur();
+      return;
+    }
+    next.focus();
+    // 숫자/텍스트 칸은 기존 값 전체 선택 → 바로 덮어쓰기 편하게
+    if(next.tagName === "INPUT" && next.type !== "date"){
+      try{ next.select(); }catch(_){}
+    }
+  });
+})();
 
 // ── 월별 차트 ─────────────────────────────────
 var _myChart   = null;
