@@ -770,7 +770,7 @@ var ACCOUNTS = {};
 function rebuildAccounts(list){
   ACCOUNTS = {};
   list.forEach(function(a){
-    ACCOUNTS[a.email] = a;
+    ACCOUNTS[String(a.email || "").trim().toLowerCase()] = a;
   });
 }
 
@@ -806,7 +806,7 @@ function showToast(msg){
 
 // ── 로그인 ──────────────────────────────────
 function doLogin(){
-  var email = document.getElementById("loginEmail").value.trim();
+  var email = document.getElementById("loginEmail").value.trim().toLowerCase();
   var pw    = document.getElementById("loginPw").value;
   var err   = document.getElementById("loginErr");
   err.textContent = "";
@@ -944,16 +944,13 @@ function showMainApp(){
   }
 }
 
-// 페이지 로드 시 클라우드에서 계정 정보 선로드
-rebuildAccounts(DEFAULT_ACCOUNTS);
-(function preload(){
-  var cached = "";
-  try{ cached = localStorage.getItem("hssup_main_binid") || ""; }catch(e){}
-  // Firebase 사용 — JSONBin 프리페치 제거됨
-})();
+// ── 데이터 저장/불러오기 (Firebase Firestore) ──────
+var _cloudData = {}; // 메모리 캐시
 
-// 저장된 로그인 복원
-(function(){
+// 페이지 로드 시 Firestore 계정 목록을 먼저 불러온 뒤 로그인 복원
+rebuildAccounts(DEFAULT_ACCOUNTS);
+
+function restoreSavedLogin(){
   try{
     if(localStorage.getItem("hssup_rem")==="1"){
       var em = localStorage.getItem("hssup_saved_email");
@@ -961,14 +958,35 @@ rebuildAccounts(DEFAULT_ACCOUNTS);
       if(em) document.getElementById("loginEmail").value = em;
       if(pw) document.getElementById("loginPw").value    = pw;
       document.getElementById("rememberMe").checked = true;
-      // 자동 로그인
       if(em && pw) doLogin();
     }
   }catch(e){}
-})();
+}
 
-// ── 데이터 저장/불러오기 (Firebase Firestore) ──────
-var _cloudData = {}; // 메모리 캐시
+function preloadAccountsBeforeLogin(){
+  var err = document.getElementById("loginErr");
+  if(err) err.textContent = "직원 계정 정보를 불러오는 중이에요.";
+
+  _db.collection("hssup").doc("salary_data").get()
+  .then(function(snap){
+    if(snap.exists){
+      _cloudData = snap.data() || {};
+      if(Array.isArray(_cloudData["_accounts"]) && _cloudData["_accounts"].length){
+        rebuildAccounts(_cloudData["_accounts"]);
+      }
+    }
+    if(err) err.textContent = "";
+    restoreSavedLogin();
+  })
+  .catch(function(e){
+    console.error("계정 정보 선로드 실패:", e);
+    if(err) err.textContent = "서버 연결에 실패했어요. 잠시 후 새로고침해주세요.";
+    // 서버 장애 시 기존 기본 계정은 사용할 수 있도록 유지
+    restoreSavedLogin();
+  });
+}
+
+preloadAccountsBeforeLogin();
 
 // ── 초기화: Firestore에서 전체 데이터 로드 ──────
 function initCloud(onDone){
@@ -1173,7 +1191,7 @@ function closeStaffModal(){ document.getElementById("staffModal").classList.remo
 function saveStaffModal(){
   var name  = document.getElementById("smName").value.trim();
   var title = document.getElementById("smTitle").value.trim();
-  var email = document.getElementById("smEmail").value.trim();
+  var email = document.getElementById("smEmail").value.trim().toLowerCase();
   var pw    = document.getElementById("smPw").value;
   var base  = parseInt(document.getElementById("smBase").value) || 0;
   var incType = document.getElementById("smIncType").value;
