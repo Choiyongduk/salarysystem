@@ -370,6 +370,158 @@ tbody td{padding:9px 10px;vertical-align:middle;}
 }
 
 </style>
+
+<style>
+/* ── 2026 모바일 사용성 개선 ───────────────────────── */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+
+@media (max-width:768px){
+  body{overflow-x:hidden;font-size:14px;}
+
+  /* 상단 메뉴: 작게 축소하지 않고 가로로 넘겨보기 */
+  .nav{position:sticky;top:0;}
+  .nav-inner{
+    display:block;
+    height:auto;
+    min-height:0;
+    padding:10px 12px 8px;
+  }
+  .nav-inner>div:first-child,
+  .nav-inner>a:first-child,
+  .nav-inner img{
+    max-width:105px;
+  }
+  .nav-right{
+    display:flex;
+    flex-wrap:nowrap;
+    gap:7px;
+    overflow-x:auto;
+    padding:8px 0 2px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .nav-right::-webkit-scrollbar{display:none;}
+  .nav-right>*{flex:0 0 auto;}
+  .nav-right .btn,
+  .nav-right .ubadge{
+    min-height:38px;
+    padding:8px 13px;
+    font-size:12px;
+  }
+
+  /* 전체 여백과 제목 */
+  .app{padding:18px 12px 72px;}
+  .eyebrow{margin-bottom:7px;}
+  .ptitle{font-size:28px;line-height:1.15;margin-bottom:18px;}
+  .toolbar{align-items:stretch;margin-bottom:16px;}
+  .toolbar .mwrap{flex:1 1 160px;}
+  .toolbar>.btn{min-height:42px;justify-content:center;}
+  .mwrap{min-height:44px;}
+  .mwrap input,.mwrap select{font-size:16px;}
+
+  /* 입력창은 iPhone 자동 확대 방지 */
+  input,select,textarea,.ci,.sinp,.sinput,.linput{font-size:16px!important;}
+
+  /* 카드 */
+  .card,.scard,.spanel,.goal-card{border-radius:16px;}
+  .chead,.shead{padding:16px;}
+  .ctitle,.stitle{font-size:20px;}
+  .g2{display:block;}
+  .g2>div+div{margin-top:16px;}
+
+  /* 목표 카드 */
+  .goal-card{padding:16px;}
+  .goal-head{display:flex;flex-direction:row;align-items:flex-start;gap:10px;}
+  .goal-label-wrap{min-width:0;}
+  .goal-input-wrap{flex-wrap:nowrap;}
+  #goalInput{width:92px;font-size:18px!important;}
+  .goal-save-btn{min-height:40px;padding:8px 15px;}
+  .goal-dday{font-size:13px;padding:8px 12px;}
+  .goal-bar-bg{height:20px;}
+  .goal-marker-label{display:none;}
+  .goal-msg{font-size:13px;}
+
+  /* 넓은 시술표: 글씨를 줄이지 않고 손가락으로 좌우 스크롤 */
+  .twrap{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+  }
+  .twrap table{
+    width:max-content!important;
+    min-width:1040px!important;
+    table-layout:auto;
+    font-size:13px;
+  }
+  .twrap thead th{
+    position:sticky;
+    top:0;
+    z-index:2;
+    background:var(--white);
+    padding:10px 9px;
+    font-size:11px;
+  }
+  .twrap tbody td{padding:9px 7px;}
+  .twrap .ci{min-height:38px;}
+
+  /* 업무비·보너스 표는 화면 너비 안에서 사용 */
+  #expBody.closest-table,
+  #bonusBody.closest-table{min-width:0!important;}
+  .spanel .twrap table{min-width:520px!important;}
+
+  /* 표가 좌우 스크롤된다는 안내 */
+  #entryBody{position:relative;}
+  .card:has(#entryBody) .twrap::after{
+    content:"좌우로 밀어서 입력 항목을 확인하세요";
+    display:block;
+    position:sticky;
+    left:0;
+    width:max-content;
+    padding:7px 12px;
+    color:var(--taupe);
+    font-size:11px;
+  }
+
+  /* 요약 영역 */
+  .srows{padding:10px 16px;}
+  .srow{padding:9px 0;gap:12px;}
+  .slabel{font-size:13px;}
+  .sval{font-size:14px;white-space:nowrap;}
+  .ibox{margin:0 16px 14px;}
+  .tbox{margin:0 16px 16px;padding:16px;}
+  .tval{font-size:27px;}
+
+  /* 버튼 터치 영역 */
+  .btn,.addbtn,.bx{min-height:40px;}
+  .addbtn{font-size:14px;}
+  .bx{min-width:38px;}
+
+  /* 모달 */
+  .mbg{align-items:flex-end;}
+  .modal{
+    width:100%;
+    max-width:none;
+    max-height:92vh;
+    border-radius:22px 22px 0 0;
+    padding:24px 18px calc(24px + env(safe-area-inset-bottom));
+  }
+  .mactions{position:sticky;bottom:0;background:var(--white);padding-top:10px;}
+
+  /* 토스트 */
+  .toast{left:12px;right:12px;bottom:18px;max-width:none;text-align:center;}
+}
+
+@media (max-width:420px){
+  .app{padding-left:10px;padding-right:10px;}
+  .ptitle{font-size:25px;}
+  .nav-right .btn,.nav-right .ubadge{font-size:11px;padding:7px 11px;}
+  .goal-head{flex-direction:column;}
+  .goal-dday{align-self:flex-start;}
+}
+</style>
+
 </head>
 <body>
 <script>
